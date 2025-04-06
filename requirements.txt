@@ -1,0 +1,15 @@
+# Django主后端依赖
+django==4.2.7
+django-cors-headers==4.3.0
+mysqlclient==2.2.0
+
+# Flask评分服务依赖
+flask==3.0.0
+transformers==4.35.2
+torch==2.1.1
+scikit-learn==1.3.2
+numpy==1.26.2
+pandas==2.1.3
+
+# BERT模型依赖
+bert-base-chinese==0.1.1
