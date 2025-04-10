@@ -41,7 +41,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style >
 .exam-list {
   padding: 20px;
 }

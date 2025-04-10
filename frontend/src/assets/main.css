@@ -1,11 +1,11 @@
 @import './base.css';
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+  max-width: none; /* 不限制宽度 */
+  margin: 0;
+  padding: 0;
 }
+
 
 a,
 .green {

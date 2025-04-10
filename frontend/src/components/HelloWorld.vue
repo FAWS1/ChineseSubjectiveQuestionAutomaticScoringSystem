@@ -15,7 +15,12 @@ defineProps<{
   </div>
 </template>
 
-<style scoped>
+<style>
+  .hello-world {
+    color: #333;
+    font-size: 16px;
+  }
+
 h1 {
   font-weight: 500;
   font-size: 2.6rem;

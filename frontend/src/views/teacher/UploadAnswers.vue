@@ -106,9 +106,10 @@ const submitUpload = async () => {
 }
 </script>
 
-<style scoped>
-.upload-answers {
-  padding: 20px;
+
+<style>
+  .upload-answers {
+    padding: 20px;
 }
 
 .upload-form {

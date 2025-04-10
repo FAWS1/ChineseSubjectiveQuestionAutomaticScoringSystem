@@ -147,9 +147,10 @@ const saveScores = async () => {
 }
 </script>
 
-<style scoped>
-.auto-scoring {
-  padding: 20px;
+
+<style>
+  .auto-scoring-container {
+    padding: 20px;
 }
 
 .scoring-form {

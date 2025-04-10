@@ -1,28 +1,54 @@
-/* color palette from <https://github.com/vuejs/theme> */
+/* Modern color palette for the application */
 :root {
-  --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
+  /* Primary Colors */
+  --primary-color: #409EFF;
+  --primary-light: #79BBFF;
+  --primary-dark: #337ECC;
 
-  --vt-c-black: #181818;
-  --vt-c-black-soft: #222222;
-  --vt-c-black-mute: #282828;
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f7fa;
+  --bg-tertiary: #e6e8eb;
 
-  --vt-c-indigo: #2c3e50;
+  /* Text Colors */
+  --text-primary: #303133;
+  --text-secondary: #606266;
+  --text-tertiary: #909399;
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
+  /* Border Colors */
+  --border-color: #dcdfe6;
+  --border-light: #e4e7ed;
+  --border-lighter: #ebeef5;
 
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
+  /* Status Colors */
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --danger-color: #f56c6c;
+  --info-color: #909399;
 
-/* semantic color variables for this project */
-:root {
+  /* Shadow */
+  --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  --box-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.12);
+  --box-shadow-dark: 0 4px 16px rgba(0, 0, 0, 0.16);
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+
+  /* Transitions */
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.4s;
+
+  /* semantic color variables for this project */
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);

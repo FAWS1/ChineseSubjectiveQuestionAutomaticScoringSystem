@@ -70,7 +70,7 @@ const resetForm = (formEl) => {
 }
 </script>
 
-<style scoped>
+<style >
 .create-exam {
   padding: 20px;
 }

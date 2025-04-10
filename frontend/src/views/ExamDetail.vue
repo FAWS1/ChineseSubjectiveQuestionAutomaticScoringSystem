@@ -114,7 +114,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style >
 .exam-detail {
   max-width: 800px;
   margin: 0 auto;

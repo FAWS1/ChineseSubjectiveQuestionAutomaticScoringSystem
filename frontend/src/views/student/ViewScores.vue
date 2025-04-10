@@ -100,20 +100,18 @@ const queryScore = async () => {
 }
 </script>
 
-<style scoped>
+<style>
 .view-scores {
   padding: 20px;
 }
 
 .query-form {
-  max-width: 800px;
-  margin: 0 auto;
+  margin-bottom: 20px;
 }
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .score-result {

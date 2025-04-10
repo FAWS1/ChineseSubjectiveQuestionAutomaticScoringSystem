@@ -1,64 +1,63 @@
 <template>
-  <div class="home">
-    <el-card class="home-card">
-      <h1 class="system-title">中文主观题自动评分系统</h1>
-      <div class="login-options">
-        <el-button
-          type="primary"
-          size="large"
-          @click="$router.push('/teacher')"
-          :icon="User"
-        >
-          教师登录
-        </el-button>
-        <el-button
-          type="success"
-          size="large"
-          @click="$router.push('/student')"
-          :icon="Notebook"
-        >
-          学生登录
-        </el-button>
+  <div class="login-page">
+    <div class="login-card">
+      <h1 class="title">中文主观题自动评分系统</h1>
+      <div class="button-group">
+        <el-button type="primary" icon="User" @click="loginAsTeacher">教师登录</el-button>
+        <el-button type="success" icon="Notebook" @click="loginAsStudent">学生登录</el-button>
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { User, Notebook } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+const loginAsTeacher = () => {
+  router.push('/login?role=teacher')
+}
+const loginAsStudent = () => {
+  router.push('/login?role=student')
+}
 </script>
 
-<style scoped>
-.home {
+<style >
+.login-page {
+  width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom right, #f0f4ff, #ffffff);
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f5f7fa;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
-.home-card {
-  width: 90%;
-  max-width: 600px;
+.login-card {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  padding: 48px 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
   text-align: center;
-  padding: 2rem;
 }
 
-.system-title {
-  font-size: 2rem;
-  color: #303133;
-  margin-bottom: 3rem;
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #409EFF;
+  margin-bottom: 32px;
 }
 
-.login-options {
+.button-group {
   display: flex;
-  justify-content: center;
-  gap: 2rem;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.el-button {
-  width: 160px;
-  height: 50px;
-  font-size: 1.1rem;
-}
+
 </style>

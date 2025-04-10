@@ -1,4 +1,5 @@
 from django.db import models
+from .auth_models import TeacherAuth, StudentAuth
 
 class Exam(models.Model):
     """考试模型"""
