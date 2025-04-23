@@ -1,5 +1,19 @@
+#auth_models.py
+
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.models import AbstractUser
+
+class CustomUser(AbstractUser):
+    email = models.EmailField('邮箱', max_length=254, blank=True)
+    phone = models.CharField('手机号', max_length=11, blank=True)
+
+    class Meta:
+        verbose_name = '用户'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.username
 
 class TeacherAuth(models.Model):
     """教师认证模型"""

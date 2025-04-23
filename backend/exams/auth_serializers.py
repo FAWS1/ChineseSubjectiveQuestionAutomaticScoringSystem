@@ -1,5 +1,7 @@
+#auth_serializers.py
 from rest_framework import serializers
 from .auth_models import TeacherAuth, StudentAuth
+from django.contrib.auth.models import User
 
 class TeacherAuthSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -26,6 +28,17 @@ class StudentAuthSerializer(serializers.ModelSerializer):
         student.set_password(validated_data['password'])
         student.save()
         return student
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'password', 'email', 'phone']
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()

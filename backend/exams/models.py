@@ -1,3 +1,5 @@
+#models.py
+
 from django.db import models
 from .auth_models import TeacherAuth, StudentAuth
 
@@ -6,6 +8,7 @@ class Exam(models.Model):
     name = models.CharField('考试名称', max_length=100)
     question = models.TextField('考试题目')
     standard_answer = models.TextField('标准答案', blank=True)
+    keywords = models.TextField('关键词', blank=True, help_text='多个关键词用逗号分隔')
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
