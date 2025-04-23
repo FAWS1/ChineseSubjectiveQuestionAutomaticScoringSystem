@@ -1,3 +1,4 @@
+#CreateExam.vue
 <template>
   <div class="create-exam">
     <el-card class="exam-form">
@@ -35,6 +36,9 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useExamStore } from '@/stores/exam'
+
+const examStore = useExamStore()
 
 const examFormRef = ref()
 const examForm = reactive({
@@ -55,9 +59,9 @@ const rules = {
 
 const submitForm = async (formEl) => {
   if (!formEl) return
-  await formEl.validate((valid) => {
+  await formEl.validate(async (valid) => {
     if (valid) {
-      // TODO: 调用后端API创建考试
+      await examStore.createExam(examForm)  // 调用 store 创建考试
       ElMessage.success('考试创建成功')
       formEl.resetFields()
     }
@@ -69,6 +73,7 @@ const resetForm = (formEl) => {
   formEl.resetFields()
 }
 </script>
+
 
 <style >
 .create-exam {

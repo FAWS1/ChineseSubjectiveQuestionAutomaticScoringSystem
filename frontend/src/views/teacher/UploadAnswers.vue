@@ -1,120 +1,131 @@
 <template>
-  <div class="upload-answers">
-    <el-card class="upload-form">
+  <div class="upload-answer">
+    <el-card class="upload-card" :body-style="{ padding: '20px' }">
       <template #header>
         <div class="card-header">
           <h2>上传学生答案</h2>
         </div>
       </template>
 
-      <el-form :model="uploadForm" :rules="rules" ref="uploadFormRef" label-width="100px">
-        <el-form-item label="选择考试" prop="examId">
-          <el-select v-model="uploadForm.examId" placeholder="请选择考试">
+      <el-form :model="form" label-width="120px" class="upload-form">
+        <el-form-item label="选择考试">
+          <el-select v-model="form.examId" placeholder="请选择考试" class="w-full">
             <el-option
               v-for="exam in examList"
               :key="exam.id"
               :label="exam.name"
               :value="exam.id"
-            ></el-option>
+            />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="答案文件" prop="file">
+        <el-form-item label="学生答案文件">
           <el-upload
-            class="upload-demo"
-            action="#"
-            :auto-upload="false"
-            :on-change="handleFileChange"
-            :file-list="fileList"
+            class="upload-area"
+            drag
+            action="/api/upload-answers"
+            :headers="{
+              'X-Requested-With': 'XMLHttpRequest',
+            }"
+            :data="{ examId: form.examId }"
+            :on-success="handleUploadSuccess"
+            :on-error="handleUploadError"
+            :before-upload="beforeUpload"
           >
-            <template #trigger>
-              <el-button type="primary">选择文件</el-button>
-            </template>
-            <el-button
-              class="ml-3"
-              type="success"
-              @click="submitUpload"
-              :disabled="!uploadForm.file"
-            >
-              上传答案
-            </el-button>
-            <template #tip>
-              <div class="el-upload__tip">
-                请上传包含学生答案的Excel文件，文件应包含学生姓名和答案内容
-              </div>
-            </template>
+            <el-icon class="upload-icon"><upload-filled /></el-icon>
+            <div class="upload-text">
+              <em>点击上传文件或将文件拖拽到此处</em>
+              <p class="upload-tip">支持 .xlsx, .xls 格式的文件</p>
+            </div>
           </el-upload>
         </el-form-item>
-      </el-form>
 
-      <div v-if="previewData.length" class="preview-section">
-        <h3>文件预览</h3>
-        <el-table :data="previewData" style="width: 100%">
-          <el-table-column prop="studentName" label="学生姓名" width="180">
-          </el-table-column>
-          <el-table-column prop="answer" label="答案内容">
-          </el-table-column>
-        </el-table>
-      </div>
+        <div class="upload-status" v-if="uploadStatus.show">
+          <el-alert
+            :title="uploadStatus.message"
+            :type="uploadStatus.type"
+            :closable="false"
+            show-icon
+          />
+        </div>
+      </el-form>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, onMounted } from 'vue'
+import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
-const uploadFormRef = ref()
-const fileList = ref([])
-const previewData = ref([])
-
-const uploadForm = reactive({
+const form = ref({
   examId: '',
-  file: null
 })
 
-// 模拟考试列表数据
-const examList = ref([
-  { id: 1, name: '期中考试' },
-  { id: 2, name: '期末考试' }
-])
+const examList = ref([])
+const uploadStatus = ref({
+  show: false,
+  message: '',
+  type: 'info'
+})
 
-const rules = {
-  examId: [{ required: true, message: '请选择考试', trigger: 'change' }],
-  file: [{ required: true, message: '请上传答案文件', trigger: 'change' }]
-}
-
-const handleFileChange = (uploadFile) => {
-  uploadForm.file = uploadFile.raw
-  // TODO: 实现文件预览功能
-  previewData.value = [
-    { studentName: '张三', answer: '示例答案内容1' },
-    { studentName: '李四', answer: '示例答案内容2' }
-  ]
-}
-
-const submitUpload = async () => {
-  if (!uploadForm.examId || !uploadForm.file) {
-    ElMessage.warning('请选择考试并上传文件')
-    return
+onMounted(async () => {
+  try {
+    const response = await fetch('/api/exams')
+    const data = await response.json()
+    examList.value = data
+  } catch (error) {
+    ElMessage.error('获取考试列表失败')
   }
-  // TODO: 调用后端API上传文件
-  ElMessage.success('答案上传成功')
-  fileList.value = []
-  previewData.value = []
-  uploadForm.file = null
+})
+
+const beforeUpload = (file) => {
+  const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                 file.type === 'application/vnd.ms-excel'
+  if (!isExcel) {
+    ElMessage.error('只能上传Excel文件！')
+    return false
+  }
+  if (!form.value.examId) {
+    ElMessage.error('请先选择考试！')
+    return false
+  }
+  return true
+}
+
+const handleUploadSuccess = (response) => {
+  uploadStatus.value = {
+    show: true,
+    message: '答案上传成功！',
+    type: 'success'
+  }
+  setTimeout(() => {
+    uploadStatus.value.show = false
+  }, 3000)
+}
+
+const handleUploadError = () => {
+  uploadStatus.value = {
+    show: true,
+    message: '答案上传失败，请重试',
+    type: 'error'
+  }
 }
 </script>
 
-
-<style>
-  .upload-answers {
-    padding: 20px;
+<style >
+.upload-answer {
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: calc(100vh - 60px);
 }
 
-.upload-form {
+.upload-card {
   max-width: 800px;
   margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .card-header {
@@ -123,11 +134,50 @@ const submitUpload = async () => {
   align-items: center;
 }
 
-.preview-section {
+.card-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2c3e50;
+}
+
+.upload-form {
   margin-top: 20px;
 }
 
-.ml-3 {
-  margin-left: 12px;
+.upload-area {
+  border: 2px dashed #409EFF;
+  border-radius: 8px;
+  background: #f8fafc;
+  transition: all 0.3s;
+}
+
+.upload-area:hover {
+  border-color: #79bbff;
+  background: #f1f6ff;
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #409EFF;
+  margin-bottom: 10px;
+}
+
+.upload-text {
+  color: #606266;
+  font-size: 14px;
+}
+
+.upload-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 8px;
+}
+
+.upload-status {
+  margin-top: 20px;
+}
+
+.w-full {
+  width: 100%;
 }
 </style>
