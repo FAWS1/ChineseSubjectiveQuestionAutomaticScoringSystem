@@ -24,8 +24,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'exams',  # 考试应用
+    'exams.apps.ExamsConfig',  # 考试应用
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
