@@ -1,9 +1,9 @@
+//auth.ts
 import { defineStore } from 'pinia'
 
 interface User {
   username: string
-  token: string
-  role: 'teacher' | 'student'
+  is_teacher: boolean
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -15,8 +15,8 @@ export const useAuthStore = defineStore('auth', {
     getUsername: (state) => state.user?.username || '',
   },
   actions: {
-    login(username: string, token: string, role: 'teacher' | 'student') {
-      this.user = { username, token, role }
+    login(username: string, is_teacher: boolean) {
+      this.user = { username, is_teacher }
       localStorage.setItem('user', JSON.stringify(this.user))
     },
     logout() {

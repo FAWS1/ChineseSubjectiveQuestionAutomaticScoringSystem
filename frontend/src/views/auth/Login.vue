@@ -39,7 +39,7 @@ const role = computed(() => {
 const handleLogin = async () => {
   if (username.value && password.value) {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/login/', {  // 后端登录接口
+      const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {  // 后端登录接口
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ const handleLogin = async () => {
       if (response.ok) {
         const data = await response.json();
         // 登录成功，存储 token 和用户信息
-        authStore.login(username.value, data.token, role.value);
+        authStore.login(username.value, role.value === 'teacher');
         ElMessage.success('登录成功');
         router.push(role.value === 'teacher' ? '/teacher' : '/student'); // 跳转到不同的页面
       } else {
