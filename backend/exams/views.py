@@ -12,29 +12,36 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 import pandas as pd
 import logging
+from django.db.models import Avg, Max, Min
+from django.db import transaction
 
-class CreateExams(viewsets.ModelViewSet):
-    queryset = Exam.objects.all()
-    serializer_class = ExamSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        try:
-            exam = serializer.save(teacher=self.request.user)  # 保存考试并关联教师
-            # 如果创建成功，返回成功响应
-            return Response(
-                {"message": "考试创建成功", "exam_id": exam.id},
-                status=status.HTTP_201_CREATED
-            )
-        except Exception as e:
-            # 如果出现错误，返回失败响应
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+
 
             
 # --- UploadAnswers 视图 ---
+class ExamViewSet(viewsets.ViewSet):
+    @action(detail=False, methods=['post'])
+    def create_exam(self, request):
+        result = exams_operate.create_exam(request.data)
+        return Response(result, status=201 if result['status'] == 'success' else 400)
+
+    @action(detail=False, methods=['post'])
+    def submit_answer(self, request):
+        result = exams_operate.submit_answer(request.data)
+        return Response(result, status=200 if result['status'] == 'success' else 400)
+
+    @action(detail=False, methods=['get'])
+    def get_scores(self, request):
+        exam_id = request.query_params.get('exam_id')
+        result = exams_operate.get_scores(exam_id)
+        return Response(result, status=200 if result['status'] == 'success' else 400)
+
+    @action(detail=False, methods=['post'])
+    def update_answer(self, request):
+        result = exams_operate.update_answer(request.data)
+        return Response(result, status=200 if result['status'] == 'success' else 400)
+
 class UploadAnswers(viewsets.ModelViewSet):
     queryset = StudentAnswer.objects.all()
     serializer_class = StudentAnswerSerializer
@@ -66,14 +73,16 @@ class UploadAnswers(viewsets.ModelViewSet):
             try:
                 exam = get_object_or_404(Exam, id=exam_id)
                 df = pd.read_excel(file_obj)
-
-                for _, row in df.iterrows():
-                    StudentAnswer.objects.create(
-                        exam=exam,
-                        student_name=row['学生姓名'],
-                        student_id=row['学号'],
-                        answer=row['答案']
-                    )
+                with transaction.atomic():
+                    for _, row in df.iterrows():
+                        if not all(k in row for k in ['学生姓名', '学号', '答案']):
+                            continue  # 或记录日志，或 raise 异常
+                        StudentAnswer.objects.create(
+                            exam=exam,
+                            student_name=row['学生姓名'],
+                            student_id=row['学号'],
+                            answer=row['答案']
+                        )
                 return Response({'message': '批量上传成功'})
             except Exception as e:
                 return Response({'error': str(e)}, status=500)
@@ -85,29 +94,67 @@ class UploadAnswers(viewsets.ModelViewSet):
             })
 
 # --- CreateExams 视图 ---
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.db import transaction, connection
+from .models import Exam
+from .serializers import ExamSerializer
+
 class CreateExams(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        print("收到的请求数据：", request.data)
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print("验证错误详情:", serializer.errors)
+            return Response({"error": "数据验证失败", "details": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        exam_name = serializer.validated_data.get('exam_name')
+
+        if not exam_name:
+            return Response({"error": "考试名称不能为空"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 构造表名，确保命名合法（不含空格等非法字符）
+        table_name = f"exam_{exam_name.strip().replace(' ', '_')}_answers"
+
         try:
-            exam = serializer.save(teacher=self.request.user)
-            return Response({"message": "考试创建成功", "exam_id": exam.id}, status=status.HTTP_201_CREATED)
+            with transaction.atomic():
+                # 创建考试记录
+                exam = serializer.save()
+
+                # 创建对应答案表
+                self.create_answer_table(table_name)
+
+                return Response({
+                    "message": "考试创建成功，答案表已建立",
+                    "exam_id": exam.id,
+                    "table_name": table_name
+                }, status=status.HTTP_201_CREATED)
+
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"创建失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['get', 'post'])
-    def create_exam_form(self, request):
-        """显示考试创建表单"""
-        if request.method == 'POST':
-            # 处理考试创建逻辑
-            return Response({'message': '考试创建成功'})
+    def create_answer_table(self, table_name):
+        """创建学生答案表"""
+        sql = f'''
+            CREATE TABLE IF NOT EXISTS `{table_name}` (
+                student_id VARCHAR(50) NOT NULL,
+            student_name VARCHAR(100) NOT NULL,
+            student_answer TEXT NOT NULL,
+            keywords_score FLOAT DEFAULT 0,
+            similarity_score FLOAT DEFAULT 0,
+            final_score FLOAT DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        '''
+        print(f"SQL to be executed: {sql}")  # 打印出 SQL 查询
 
-        # GET 请求时显示一个表单
-        return Response({
-            'message': 'GET 请求时返回创建考试表单。',
-        })
+        with connection.cursor() as cursor:
+            cursor.execute(sql)  # 执行 SQL 语句
 
 
 class ViewScores(viewsets.ReadOnlyModelViewSet):
@@ -325,39 +372,7 @@ class AutoScoring(viewsets.ModelViewSet):
                 'message': 'GET 请求时显示BERT评分的相关信息或表单。',
             })
 
-    @action(detail=True, methods=['get', 'post'])
-    def score_keywords(self, request, pk=None):
-        """使用关键词匹配进行评分"""
-        if request.method == 'POST':
-            try:
-                logger.info("Received request for keyword scoring: %s", request.data)
-                answer = self.get_object()
-                response = requests.post("http://127.0.0.1:5000/keyword_score", json={
-                    "standard_answer": answer.exam.standard_answer,
-                    "student_answer": answer.answer,
-                    "keywords": answer.exam.keywords
-                })
-                response.raise_for_status()
-                score_data = response.json()
 
-                answer.keyword_match = score_data.get("keyword_match")
-                answer.keyword_score = score_data.get("score")
-                answer.save()
-
-                logger.info("Keyword scoring completed: %s", score_data)
-                return Response({
-                    'keyword_score': answer.keyword_score,
-                    'keyword_match': answer.keyword_match
-                })
-            except Exception as e:
-                logger.error("Error during keyword scoring: %s", str(e))
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        # GET 请求的处理
-        else:
-            return Response({
-                'message': 'GET 请求时显示关键词评分的相关信息或表单。',
-            })
 
     @action(detail=True, methods=['get', 'post'])
     def score_combined(self, request, pk=None):

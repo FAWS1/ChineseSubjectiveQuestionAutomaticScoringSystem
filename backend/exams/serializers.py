@@ -6,11 +6,11 @@ class ExamSerializer(serializers.ModelSerializer):
     """考试序列化器"""
     class Meta:
         model = Exam
-        fields = ['id', 'name', 'question', 'standard_answer', 'created_at']
+        fields = ['exam_name']
 
 class StudentAnswerSerializer(serializers.ModelSerializer):
     """学生答案序列化器"""
-    exam_name = serializers.CharField(source='exam.name', read_only=True)
+    exam_name = serializers.CharField(source='exam.exam_name', read_only=True)
 
     class Meta:
         model = StudentAnswer

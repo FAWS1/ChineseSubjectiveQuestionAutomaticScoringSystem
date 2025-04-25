@@ -1,24 +1,25 @@
 #models.py
 
 from django.db import models
+import sqlite3
+from django.db import connection
 
 
 class Exam(models.Model):
     """考试模型"""
-    name = models.CharField('考试名称', max_length=100)
-    question = models.TextField('考试题目')
-    standard_answer = models.TextField('标准答案', blank=True)
-    keywords = models.TextField('关键词', blank=True, help_text='多个关键词用逗号分隔')
-    created_at = models.DateTimeField('创建时间', auto_now_add=True)
-    updated_at = models.DateTimeField('更新时间', auto_now=True)
+    exam_name = models.CharField('考试名称', max_length=100)
+    #question = models.TextField('考试题目')
+
+    #created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    #updated_at = models.DateTimeField('更新时间', auto_now=True)
 
     class Meta:
         verbose_name = '考试'
         verbose_name_plural = verbose_name
-        ordering = ['-created_at']
+       # ordering = ['-created_at']
 
     def __str__(self):
-        return self.name
+        return self.exam_name
 
 class StudentAnswer(models.Model):
     """学生答案模型"""
@@ -37,4 +38,29 @@ class StudentAnswer(models.Model):
         unique_together = ['exam', 'student_name']  # 同一考试每个学生只能有一个答案
 
     def __str__(self):
-        return f'{self.exam.name} - {self.student_name}'
+        return f'{self.exam.exam_name} - {self.student_name}'
+
+
+def ensure_exam_table(exam_id):
+    with connection.cursor() as cursor:
+        cursor.execute(f'''
+            CREATE TABLE IF NOT EXISTS exam_{exam_id} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                exam_name TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+# def ensure_answer_table(exam_id):
+#     with connection.cursor() as cursor:
+#         cursor.execute(f'''
+#             CREATE TABLE IF NOT EXISTS student_answer_{exam_id} (
+#                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+#                 student_name TEXT NOT NULL,
+#                 answer TEXT NOT NULL,
+#                 score DECIMAL(5,2),
+#                 similarity FLOAT,
+#                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+#                 UNIQUE(exam_id, student_name)
+#             )
+#         ''')

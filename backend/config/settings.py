@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'exams.apps.ExamsConfig',  # 考试应用
+    'django_extensions',
 ]
 
 
@@ -116,5 +117,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'exams.jwt_auth.JWTAuthentication',  # 使用自定义JWT认证
     ],
 }
+
