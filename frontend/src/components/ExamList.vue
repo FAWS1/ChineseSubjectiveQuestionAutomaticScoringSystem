@@ -29,7 +29,7 @@ const exams = ref<Exam[]>([])
 
 const fetchExams = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/exams/')
+    const response = await axios.get('http://localhost:8000/api/create-exams/')
     exams.value = response.data
   } catch (error) {
     console.error('获取考试列表失败：', error)

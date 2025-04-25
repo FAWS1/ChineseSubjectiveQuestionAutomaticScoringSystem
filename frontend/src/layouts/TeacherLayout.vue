@@ -31,6 +31,14 @@
             <el-icon><Check /></el-icon>
             <span>自动评分</span>
           </el-menu-item>
+          <el-menu-item index="/teacher/view-scores">
+            <el-icon><TrendCharts /></el-icon>
+            <span>查看成绩</span>
+          </el-menu-item>
+          <el-menu-item index="/teacher/create-exam-form">
+            <el-icon><Document /></el-icon>
+            <span>考试表单</span>
+          </el-menu-item>
           </div>
           <div class="logout-button-container">
             <el-menu-item @click="handleLogout">

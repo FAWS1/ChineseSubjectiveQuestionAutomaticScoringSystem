@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '@/api';  // 使用统一配置的api实例替代直接导入axios
 
 export const useExamStore = defineStore('exam', () => {
   const examList = ref<any[]>([]);
 
   const fetchExams = async () => {
     try {
-      const response = await axios.get('/api/exams/');
+      const response = await api.get('/create-exams/');
       examList.value = response.data;
     } catch (error) {
       console.error('获取考试列表失败', error);
@@ -16,12 +16,20 @@ export const useExamStore = defineStore('exam', () => {
 
   const createExam = async (examData: any) => {
     try {
-      const response = await axios.post('/api/exams/', examData);
-      examList.value.push(response.data);  // 将新创建的考试添加到考试列表
+      console.log('创建考试请求数据：', examData);
+      const response = await api.post('/create-exams/', examData);  // 使用正确的相对路径
+      examList.value.push(response.data);
     } catch (error) {
       console.error('创建考试失败', error);
+      if ((error as any).response) {
+        console.error('后端返回错误：', (error as any).response?.data);
+      } else {
+        console.error('非 API 错误', error);
+      }
     }
   };
+  
+  
 
   return {
     examList,

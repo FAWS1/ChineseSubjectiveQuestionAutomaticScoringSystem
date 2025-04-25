@@ -54,7 +54,7 @@ const handleLogin = async () => {
       if (response.ok) {
         const data = await response.json();
         // 登录成功，存储 token 和用户信息
-        authStore.login(username.value, role.value === 'teacher');
+        authStore.login(username.value, role.value === 'teacher', data.token);
         ElMessage.success('登录成功');
         router.push(role.value === 'teacher' ? '/teacher' : '/student'); // 跳转到不同的页面
       } else {

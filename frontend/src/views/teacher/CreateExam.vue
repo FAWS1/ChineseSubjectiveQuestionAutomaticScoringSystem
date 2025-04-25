@@ -9,8 +9,8 @@
       </template>
       
       <el-form :model="examForm" :rules="rules" ref="examFormRef" label-width="100px">
-        <el-form-item label="考试名称" prop="name">
-          <el-input v-model="examForm.name" placeholder="请输入考试名称"></el-input>
+        <el-form-item label="考试名称" prop="exam_name">
+          <el-input v-model="examForm.exam_name" placeholder="请输入考试名称"></el-input>
         </el-form-item>
         
         <el-form-item label="考试题目" prop="question">
@@ -39,22 +39,21 @@ import { ElMessage } from 'element-plus'
 import { useExamStore } from '@/stores/exam'
 
 const examStore = useExamStore()
-
 const examFormRef = ref()
 const examForm = reactive({
-  name: '',
+  exam_name: '',
   question: ''
 })
 
 const rules = {
-  name: [
+  exam_name: [
     { required: true, message: '请输入考试名称', trigger: 'blur' },
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
   ],
-  question: [
-    { required: true, message: '请输入考试题目', trigger: 'blur' },
-    { min: 5, max: 500, message: '长度在 5 到 500 个字符', trigger: 'blur' }
-  ]
+  //question: [
+    //{ required: true, message: '请输入考试题目', trigger: 'blur' },
+    //{ min: 5, max: 500, message: '长度在 5 到 500 个字符', trigger: 'blur' }
+  //]
 }
 
 const submitForm = async (formEl) => {

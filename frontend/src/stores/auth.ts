@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 interface User {
   username: string
   is_teacher: boolean
+  token?: string
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -13,10 +14,11 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.user,
     getUsername: (state) => state.user?.username || '',
+    getToken: (state) => state.user?.token || '',
   },
   actions: {
-    login(username: string, is_teacher: boolean) {
-      this.user = { username, is_teacher }
+    login(username: string, is_teacher: boolean, token: string) {
+      this.user = { username, is_teacher, token }
       localStorage.setItem('user', JSON.stringify(this.user))
     },
     logout() {

@@ -62,7 +62,7 @@ const submitResult = ref<{ success: boolean; message: string } | null>(null)
 
 const fetchExam = async () => {
   try {
-    const response = await axios.get(`http://localhost:8000/api/exams/${route.params.id}/`)
+    const response = await axios.get(`http://localhost:8000/api/create-exams/${route.params.id}/`)
     exam.value = response.data
   } catch (error) {
     console.error('获取考试详情失败：', error)
