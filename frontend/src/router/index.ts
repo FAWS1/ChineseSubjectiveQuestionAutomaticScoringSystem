@@ -26,7 +26,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'auto-scoring', name: 'AutoScoring', component: () => import('@/views/teacher/AutoScoring.vue') },
       { path: 'manage-exam', name: 'ManageExam', component: () => import('@/views/teacher/ManageExam.vue') },
       { path: 'view-grades', name: 'ViewGrades', component: () => import('@/views/teacher/ViewGrades.vue') },
-      
+      { path: 'exam-table', name: 'ExamTable', component: () => import('@/views/teacher/ExamTable.vue') },
     ],
   },
   

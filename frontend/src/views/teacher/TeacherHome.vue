@@ -65,7 +65,9 @@
           </template>
           <div class="card-content">
             <p>查看和分析学生考试成绩</p>
-            <el-button type="primary" @click="router.push('/teacher/view-grades')">查看成绩</el-button>
+            
+            <el-button type="primary" @click="router.push({ name: 'ViewGrades' })">查看成绩</el-button>
+
           </div>
         </el-card>
       </el-col>
