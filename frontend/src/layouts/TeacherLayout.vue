@@ -81,7 +81,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Document, Upload, Check, UserFilled, SwitchButton, HomeFilled } from '@element-plus/icons-vue'
+import { Document, Upload, Check, UserFilled, SwitchButton, HomeFilled, TrendCharts } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useStore } from '@/stores'
 

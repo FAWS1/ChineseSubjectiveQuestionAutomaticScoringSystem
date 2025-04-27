@@ -9,12 +9,12 @@
 
       <el-form :model="scoringForm" :rules="rules" ref="scoringFormRef" label-width="100px">
         <el-form-item label="选择考试" prop="examId">
-          <el-select v-model="scoringForm.examId" placeholder="请选择考试" @change="handleExamChange">
+          <el-select v-model="scoringForm.examId" placeholder="请选择考试" @change="handleExamChange" class="w-full">
             <el-option
               v-for="exam in examList"
-              :key="exam.id"
-              :label="exam.name"
-              :value="exam.id"
+              :key="exam.exam_name"
+              :label="exam.exam_name"
+              :value="exam.exam_name"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -71,8 +71,9 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import api from '@/api'
 
 const scoringFormRef = ref()
 const scoring = ref(false)
@@ -83,16 +84,40 @@ const scoringForm = reactive({
   standardAnswer: ''
 })
 
-// 模拟考试列表数据
-const examList = ref([
-  { id: 1, name: '期中考试' },
-  { id: 2, name: '期末考试' }
-])
+const examList = ref([])
 
 const rules = {
   examId: [{ required: true, message: '请选择考试', trigger: 'change' }],
   standardAnswer: [{ required: true, message: '请输入标准答案', trigger: 'blur' }]
 }
+
+// 获取认证令牌，并创建请求头对象
+const authHeaders = computed(() => {
+  let token = ''
+  try {
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      const user = JSON.parse(userStr)
+      token = user.token || ''
+    }
+  } catch (e) {
+    console.error('获取用户令牌失败', e)
+  }
+  return {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Authorization': token ? `Bearer ${token}` : ''
+  }
+})
+
+onMounted(async () => {
+  try {
+    const response = await api.get('/create-exams/')
+    examList.value = response.data || []
+  } catch (error) {
+    console.error('获取考试列表失败', error)
+    ElMessage.error('获取考试列表失败')
+  }
+})
 
 const handleExamChange = (examId) => {
   // TODO: 获取考试信息和已上传的答案
@@ -107,25 +132,18 @@ const startScoring = async () => {
 
   scoring.value = true
   try {
-    // TODO: 调用后端API进行自动评分
-    // 模拟评分结果
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    scoringResults.value = [
-      {
-        studentName: '张三',
-        answer: '这是张三的答案内容...',
-        score: 85,
-        similarity: 0.85
-      },
-      {
-        studentName: '李四',
-        answer: '这是李四的答案内容...',
-        score: 75,
-        similarity: 0.75
-      }
-    ]
+    // 调用后端API进行自动评分
+    const response = await api.post('/auto-scoring/', {
+      examId: scoringForm.examId,
+      standardAnswer: scoringForm.standardAnswer
+    }, {
+      headers: authHeaders.value
+    })
+    
+    scoringResults.value = response.data || []
     ElMessage.success('评分完成')
   } catch (error) {
+    console.error('评分过程出现错误', error)
     ElMessage.error('评分过程出现错误')
   } finally {
     scoring.value = false
@@ -139,9 +157,17 @@ const handleScoreChange = (row) => {
 
 const saveScores = async () => {
   try {
-    // TODO: 调用后端API保存评分结果
+    // 调用后端API保存评分结果
+    await api.post('/save-scores/', {
+      examId: scoringForm.examId,
+      scores: scoringResults.value
+    }, {
+      headers: authHeaders.value
+    })
+    
     ElMessage.success('评分结果已保存')
   } catch (error) {
+    console.error('保存评分结果失败', error)
     ElMessage.error('保存评分结果失败')
   }
 }
@@ -149,19 +175,30 @@ const saveScores = async () => {
 
 
 <style>
-  .auto-scoring-container {
-    padding: 20px;
+.auto-scoring {
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: calc(100vh - 60px);
 }
 
 .scoring-form {
   max-width: 1000px;
   margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2c3e50;
 }
 
 .results-section {
@@ -171,5 +208,9 @@ const saveScores = async () => {
 .actions {
   margin-top: 20px;
   text-align: right;
+}
+
+.w-full {
+  width: 100%;
 }
 </style>
