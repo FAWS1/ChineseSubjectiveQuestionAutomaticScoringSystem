@@ -7,7 +7,7 @@ from django.db import connection
 
 class Exam(models.Model):
     """考试模型"""
-    exam_name = models.CharField('考试名称', max_length=100)
+    exam_name = models.CharField('考试名称', max_length=100, primary_key=True)
     #question = models.TextField('考试题目')
 
     #created_at = models.DateTimeField('创建时间', auto_now_add=True)
@@ -16,6 +16,7 @@ class Exam(models.Model):
     class Meta:
         verbose_name = '考试'
         verbose_name_plural = verbose_name
+        db_table = 'exams_exam'
        # ordering = ['-created_at']
 
     def __str__(self):
@@ -25,6 +26,7 @@ class StudentAnswer(models.Model):
     """学生答案模型"""
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, verbose_name='考试')
     student_name = models.CharField('学生姓名', max_length=50)
+    student_id = models.CharField('学号', max_length=50, blank=True, null=True)
     answer = models.TextField('答案内容')
     score = models.DecimalField('得分', max_digits=5, decimal_places=2, null=True, blank=True)
     similarity = models.FloatField('相似度', null=True, blank=True)

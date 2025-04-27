@@ -1,4 +1,4 @@
-#vews.py:
+#views.py:
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -71,18 +71,54 @@ class UploadAnswers(viewsets.ModelViewSet):
                 return Response({'error': '缺少参数'}, status=400)
 
             try:
-                exam = get_object_or_404(Exam, id=exam_id)
+                # 获取考试信息
+                exam = get_object_or_404(Exam, exam_name=exam_id)
+                
+                # 构造动态表名
+                table_name = f"exam_{exam.exam_name.strip().replace(' ', '_')}_answers"
+                print(f"使用的表名: {table_name}")  # 添加日志以便调试
+                
+                # 读取Excel文件
                 df = pd.read_excel(file_obj)
+                
+                # 检查是否有列名映射信息
+                column_mapping_str = request.POST.get('column_mapping')
+                if column_mapping_str:
+                    try:
+                        import json
+                        column_mapping = json.loads(column_mapping_str)
+                        # 重命名列以匹配后端期望的格式
+                        df = df.rename(columns=column_mapping)
+                    except Exception as e:
+                        print(f"列名映射解析错误: {str(e)}")
+                
+                # 检查必要的列是否存在
+                required_columns = ['学生姓名', '学号', '答案']
+                missing_columns = [col for col in required_columns if col not in df.columns]
+                if missing_columns:
+                    return Response({
+                        'error': f'文件格式错误，缺少必要的列: {", ".join(missing_columns)}。请确保Excel文件包含以下列：学生姓名、学号、答案'
+                    }, status=400)
+                
+                # 使用事务确保数据一致性
                 with transaction.atomic():
-                    for _, row in df.iterrows():
-                        if not all(k in row for k in ['学生姓名', '学号', '答案']):
-                            continue  # 或记录日志，或 raise 异常
-                        StudentAnswer.objects.create(
-                            exam=exam,
-                            student_name=row['学生姓名'],
-                            student_id=row['学号'],
-                            answer=row['答案']
-                        )
+                    with connection.cursor() as cursor:
+                        # 对每一行数据进行处理
+                        for _, row in df.iterrows():
+                            # 构建插入动态表的SQL语句
+                            sql = f"""
+                            INSERT INTO `{table_name}` 
+                            (student_id, student_name, student_answer, created_at) 
+                            VALUES (%s, %s, %s, NOW())
+                            """
+                            
+                            # 执行SQL插入数据
+                            cursor.execute(sql, [
+                                row['学号'],
+                                row['学生姓名'],
+                                row['答案']
+                            ])
+                            
                 return Response({'message': '批量上传成功'})
             except Exception as e:
                 return Response({'error': str(e)}, status=500)
@@ -105,6 +141,16 @@ class CreateExams(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
     permission_classes = [IsAuthenticated]
+    
+    def list(self, request, *args, **kwargs):
+        """获取所有考试列表"""
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"获取考试列表错误: {str(e)}")
+            return Response({"error": f"获取考试列表失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def create(self, request, *args, **kwargs):
         print("收到的请求数据：", request.data)
